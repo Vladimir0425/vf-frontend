@@ -1,7 +1,13 @@
-import React, { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useState, useEffect } from 'react';
+import { useMatch, useNavigate } from '@tanstack/react-location';
 
 import { Card, Input, Select } from '@/components';
-import { ICategory } from '../Categories';
+
+import { CategoryService } from '@/services';
+
+import { useCategoryStore } from '@/stores';
+
+import { ICategory } from '@/interfaces';
 
 import styles from './NewCategory.module.scss';
 
@@ -9,8 +15,16 @@ const initialCategory: ICategory = {
   name: '',
   status: '',
 };
+const initialStatus = ['Active', 'Inactive'];
+
+const backToPath = '/admin/settings/dashboard/category';
 
 export function NewCategory() {
+  const navigate = useNavigate();
+  const {
+    params: { id: categoryId },
+  } = useMatch();
+  const { updateCategory: updateStoreCategory } = useCategoryStore();
   const [category, setCategory] = useState<ICategory>(initialCategory);
 
   const updateCatName = (e: ChangeEvent<HTMLInputElement>) => {
@@ -20,6 +34,29 @@ export function NewCategory() {
   const updateCatStatus = (status: string) => {
     setCategory({ ...category, status });
   };
+
+  const onCreateClick = () => {
+    if (categoryId === 'create') {
+      CategoryService.createOne(category).then(() => {
+        navigate({ to: backToPath });
+      });
+    } else {
+      CategoryService.updateOne(categoryId, category).then(() => {
+        updateStoreCategory(categoryId, category);
+        navigate({ to: backToPath });
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!categoryId || categoryId === 'create') {
+      setCategory(initialCategory);
+    } else {
+      CategoryService.findOne(categoryId).then(category => {
+        setCategory(category);
+      });
+    }
+  }, [categoryId]);
 
   return (
     <Card title="New Category" className={styles.root}>
@@ -38,12 +75,20 @@ export function NewCategory() {
             value={category.status}
             updateValue={updateCatStatus}
             placeholder="Status"
+            options={initialStatus}
           />
         </div>
       </div>
       <div className={styles.buttonBar}>
-        <button className={styles.cancelButton}>Cancel</button>
-        <button className={styles.addButton}>Add</button>
+        <button
+          className={styles.cancelButton}
+          onClick={() => navigate({ to: backToPath })}
+        >
+          Cancel
+        </button>
+        <button className={styles.addButton} onClick={onCreateClick}>
+          {categoryId === 'create' ? 'Add' : 'Edit'}
+        </button>
       </div>
     </Card>
   );

@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from '@tanstack/react-location';
 
 import clsx from 'clsx';
-import { Card, Logo, TableBody } from '@/components/common';
+import { Card, TableBody } from '@/components/common';
 import { Input, Select } from '@/components/forms';
 import { ClipboardIcon, StarIcon } from '@/components/icons';
+import { Logo } from '@/components/layout/other';
 
 import { ITableColumn } from '@/interfaces';
 

@@ -16,6 +16,9 @@ export function CustomerChart({ customers }: ICustomerChartProps) {
       title: {
         text: null,
       },
+      credits: {
+        enabled: false,
+      },
       xAxis: {
         categories: ['Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat', 'Sun'],
       },

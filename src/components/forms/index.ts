@@ -3,3 +3,5 @@ export * from './Select';
 export * from './TextField';
 export * from './ImageUpload';
 export * from './RadioGroup';
+export * from './TagInput';
+export * from './Button';

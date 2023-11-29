@@ -1,53 +1,34 @@
-import React, { ChangeEvent, useState } from 'react';
-import { Link } from '@tanstack/react-location';
+import { ChangeEvent, useState, useEffect } from 'react';
+import { useNavigate } from '@tanstack/react-location';
 
 import { Card, TableToolbar, TableBody } from '@/components/common';
 import { Select } from '@/components/forms';
 
 import { TrashIcon } from '@/components/icons';
 
+import { TagService } from '@/services';
+
+import { useTagsStore } from '@/stores';
+
 import { ITableColumn } from '@/interfaces';
 
 import styles from './ProductTags.module.scss';
 
-export interface IProductTag {
-  name: string;
-  status: string;
-}
-
-const initialTagsData: IProductTag[] = [
-  {
-    name: 'Black Polish Radish',
-    status: 'Active',
-  },
-  {
-    name: 'Bowls of Puter',
-    status: 'Active',
-  },
-  {
-    name: 'Black Polish Radish',
-    status: 'Active',
-  },
-  {
-    name: 'Bowls of Puter',
-    status: 'Active',
-  },
-  {
-    name: 'Black Polish Radish',
-    status: 'Active',
-  },
-  {
-    name: 'Bowls of Puter',
-    status: 'Active',
-  },
-];
-
-const newTagPath = '/admin/settings/dashboard/tags/create';
+const tagPathPrefix = '/admin/settings/dashboard/tags';
 
 export function ProductTags() {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState<string>('');
   const [category, setCategory] = useState<string>('');
-  const [tagsData, setTagsData] = useState<IProductTag[]>(initialTagsData);
+  const {
+    tags: storeTags,
+    setTags: setStoreTags,
+    deleteTag: deleteStoreTag,
+  } = useTagsStore();
+
+  const onEditClick = (id: string) => {
+    navigate({ to: `${tagPathPrefix}/${id}` });
+  };
 
   const statuses: string[] = ['Active', 'Passive'];
   const columns: ITableColumn[] = [
@@ -75,8 +56,13 @@ export function ProductTags() {
       width: 250,
       cell: (row: any) => (
         <div className={styles.actionCell}>
-          <button className={styles.actionButton}>Edit</button>
-          <span>
+          <button
+            className={styles.actionButton}
+            onClick={() => onEditClick(row._id)}
+          >
+            Edit
+          </button>
+          <span onClick={() => onDeleteClick(row._id)}>
             <TrashIcon />
           </span>
         </div>
@@ -92,6 +78,18 @@ export function ProductTags() {
     setCategory(_category);
   };
 
+  const onDeleteClick = (id: string) => {
+    TagService.deleteOne(id).then(() => {
+      deleteStoreTag(id);
+    });
+  };
+
+  useEffect(() => {
+    TagService.findAll(filter, category).then(tags => {
+      setStoreTags(tags);
+    });
+  }, [filter, category]);
+
   return (
     <Card title="Product Tags" className={styles.root}>
       <TableToolbar
@@ -106,15 +104,18 @@ export function ProductTags() {
         actions={
           <div>
             <p className={styles.buttonLabel}>New</p>
-            <button className={styles.actionButton}>
-              <Link to={newTagPath}>New</Link>
+            <button
+              className={styles.actionButton}
+              onClick={() => navigate({ to: `${tagPathPrefix}/create` })}
+            >
+              New
             </button>
           </div>
         }
       />
       <TableBody
         columns={columns}
-        rows={tagsData}
+        rows={storeTags}
         className={styles.tableBody}
       />
     </Card>

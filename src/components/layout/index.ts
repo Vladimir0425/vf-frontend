@@ -1,3 +1,2 @@
-export * from './Header';
-export * from './Sidebar';
-export * from './Layout';
+export { Layout as CustomerLayout } from './customer';
+export { Layout as OtherLayout } from './other';

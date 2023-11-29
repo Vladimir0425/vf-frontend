@@ -13,7 +13,7 @@ function App() {
         defaultOptions: {
           queries: {
             refetchOnWindowFocus: false,
-            refetchOnMount: false,
+            refetchOnMount: true,
             refetchOnReconnect: false,
             retry: 1,
           },

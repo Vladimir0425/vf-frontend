@@ -1,7 +1,11 @@
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent, useState, useEffect, useMemo } from 'react';
+import { useNavigate, useMatch, useMatchRoute } from '@tanstack/react-location';
 
 import { Card, Input, Select } from '@/components';
-import { IProductTag } from '../ProductTags';
+
+import { TagService } from '@/services';
+
+import { IProductTag } from '@/interfaces';
 
 import styles from './NewProductTag.module.scss';
 
@@ -9,8 +13,15 @@ const initialProductTag: IProductTag = {
   name: '',
   status: '',
 };
+const initialStatus = ['Active', 'Inactive'];
+
+const backToPath = '/admin/settings/dashboard/tags';
 
 export function NewProductTag() {
+  const navigate = useNavigate();
+  const {
+    params: { id: tagId },
+  } = useMatch();
   const [product, setProduct] = useState<IProductTag>(initialProductTag);
 
   const updateTagName = (e: ChangeEvent<HTMLInputElement>) => {
@@ -20,6 +31,26 @@ export function NewProductTag() {
   const updateTagStatus = (status: string) => {
     setProduct({ ...product, status });
   };
+
+  const onCreateClick = () => {
+    if (tagId === 'create') {
+      TagService.createOne(product).then(tag => {
+        navigate({ to: backToPath });
+      });
+    } else {
+      TagService.updateOne(tagId, product).then(tag => {
+        navigate({ to: backToPath });
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (tagId && tagId !== 'create') {
+      TagService.findOne(tagId).then(tag => {
+        setProduct(tag);
+      });
+    }
+  }, [tagId]);
 
   return (
     <Card title="New Product Tags" className={styles.root}>
@@ -37,13 +68,20 @@ export function NewProductTag() {
           <Select
             value={product.status}
             updateValue={updateTagStatus}
-            placeholder="Status"
+            options={initialStatus}
           />
         </div>
       </div>
       <div className={styles.buttonBar}>
-        <button className={styles.cancelButton}>Cancel</button>
-        <button className={styles.addButton}>Add</button>
+        <button
+          className={styles.cancelButton}
+          onClick={() => navigate({ to: backToPath })}
+        >
+          Cancel
+        </button>
+        <button className={styles.addButton} onClick={onCreateClick}>
+          {tagId === 'create' ? 'Add' : 'Edit'}
+        </button>
       </div>
     </Card>
   );

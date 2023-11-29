@@ -1,25 +1,23 @@
-import React, { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useState, useEffect } from 'react';
+import { useMatch, useNavigate } from '@tanstack/react-location';
 
 import { Card, Input } from '@/components';
 import { SupportCenter } from '@/components/super-admin';
 
+import { CustomerService } from '@/services';
+
+import { ICustomer } from '@/interfaces';
+
 import { formatNumber } from '@/utils';
 
 import styles from './CustomerEdit.module.scss';
-import { useNavigate } from '@tanstack/react-location';
 
-export interface ICustomer {
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-}
-
-const initialCustomer = {
+const initialCustomer: ICustomer = {
   name: '',
   email: '',
-  phone: '',
+  number: '',
   address: '',
+  status: '',
 };
 
 export interface ICustomerStatis {
@@ -35,6 +33,9 @@ const initialStatis = {
 const backToHomePath = '/admin/customers/home';
 
 export function CustomerEdit() {
+  const {
+    params: { id: customerId },
+  } = useMatch();
   const navigate = useNavigate();
   const [customer, setCustomer] = useState<ICustomer>(initialCustomer);
   const [statisData, setStatisData] = useState<ICustomerStatis>(initialStatis);
@@ -46,6 +47,20 @@ export function CustomerEdit() {
         [field]: e.target.value,
       });
     };
+
+  const onEditClick = () => {
+    CustomerService.updateOne(customerId, customer).then(() => {
+      navigate({ to: backToHomePath });
+    });
+  };
+
+  useEffect(() => {
+    if (customerId) {
+      CustomerService.findOne(customerId).then(customer => {
+        setCustomer(customer);
+      });
+    }
+  }, [customerId]);
 
   return (
     <div className={styles.root}>
@@ -76,8 +91,8 @@ export function CustomerEdit() {
           <div className={styles.control}>
             <p>Customer Phone Number</p>
             <Input
-              value={customer.phone}
-              updateValue={updateCustomer('phone')}
+              value={customer.number}
+              updateValue={updateCustomer('number')}
               placeholder="Customer Phone Number"
             />
           </div>
@@ -89,6 +104,11 @@ export function CustomerEdit() {
               placeholder="Customer Address"
             />
           </div>
+        </div>
+        <div className={styles.buttonBar}>
+          <button className={styles.button} onClick={onEditClick}>
+            Edit
+          </button>
         </div>
       </Card>
       <div className={styles.statisSection}>

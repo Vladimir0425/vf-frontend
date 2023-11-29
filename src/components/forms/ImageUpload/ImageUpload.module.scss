@@ -17,3 +17,15 @@
     }
   }
 }
+
+.rounded {
+  .imgSelector {
+    input {
+      @apply rounded-full border-none bg-primary;
+
+      button {
+        @apply rounded-full;
+      }
+    }
+  }
+}

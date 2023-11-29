@@ -1,55 +1,32 @@
-import React, { ChangeEvent, useState } from 'react';
-import { Link } from '@tanstack/react-location';
+import { ChangeEvent, useState, useEffect } from 'react';
+import { useNavigate } from '@tanstack/react-location';
 
 import { Card, TableToolbar, TableBody } from '@/components/common';
 import { Select } from '@/components/forms';
-
 import { TrashIcon } from '@/components/icons';
 
-import { ITableColumn } from '@/interfaces';
+import { MetricService } from '@/services';
+
+import { useMetricStore } from '@/stores';
+
+import { ITableColumn, IMetric } from '@/interfaces';
 
 import styles from './Metrics.module.scss';
 
-export interface IMetric {
-  name: string;
-  status: string;
-}
+const initialStatus: string[] = ['Active', 'Inactive'];
 
-const initialMetricsData: IMetric[] = [
-  {
-    name: 'Black Polish Radish',
-    status: 'Active',
-  },
-  {
-    name: 'Bowls of Puter',
-    status: 'Active',
-  },
-  {
-    name: 'Black Polish Radish',
-    status: 'Active',
-  },
-  {
-    name: 'Bowls of Puter',
-    status: 'Active',
-  },
-  {
-    name: 'Black Polish Radish',
-    status: 'Active',
-  },
-  {
-    name: 'Bowls of Puter',
-    status: 'Active',
-  },
-];
-
-const newMetricPath = '/admin/settings/dashboard/metrics/create';
+const metricPathPrefix = '/admin/settings/dashboard/metrics';
 
 export function Metrics() {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState<string>('');
   const [category, setCategory] = useState<string>('');
-  const [tagsData, setTagsData] = useState<IMetric[]>(initialMetricsData);
+  const {
+    metrics: storeMetrics,
+    setMetrics: setStoreMetrics,
+    deleteMetric: deleteStoreMetric,
+  } = useMetricStore();
 
-  const statuses: string[] = ['Active', 'Passive'];
   const columns: ITableColumn[] = [
     {
       title: 'Metric Name',
@@ -64,7 +41,7 @@ export function Metrics() {
         <Select
           rounded="full"
           value={row.status}
-          options={statuses}
+          options={initialStatus}
           className={styles.statusSelector}
         />
       ),
@@ -75,8 +52,13 @@ export function Metrics() {
       width: 250,
       cell: (row: any) => (
         <div className={styles.actionCell}>
-          <button className={styles.actionButton}>Edit</button>
-          <span>
+          <button
+            className={styles.actionButton}
+            onClick={onClickEdit(row._id)}
+          >
+            Edit
+          </button>
+          <span onClick={onClickDelete(row._id)}>
             <TrashIcon />
           </span>
         </div>
@@ -92,6 +74,22 @@ export function Metrics() {
     setCategory(_category);
   };
 
+  const onClickEdit = (id: string) => () => {
+    navigate({ to: `${metricPathPrefix}/${id}` });
+  };
+
+  const onClickDelete = (id: string) => () => {
+    MetricService.deleteOne(id).then(() => {
+      deleteStoreMetric(id);
+    });
+  };
+
+  useEffect(() => {
+    MetricService.findAll(filter, category).then(metrics => {
+      setStoreMetrics(metrics);
+    });
+  }, [filter, category]);
+
   return (
     <Card title="Metrics" className={styles.root}>
       <TableToolbar
@@ -101,20 +99,23 @@ export function Metrics() {
         category={category}
         updateCategory={updateStatus}
         selectTitle="Status"
-        selectOpts={statuses}
+        selectOpts={initialStatus}
         className={styles.tableToolbar}
         actions={
           <div>
             <p className={styles.buttonLabel}>New</p>
-            <button className={styles.actionButton}>
-              <Link to={newMetricPath}>New</Link>
+            <button
+              className={styles.actionButton}
+              onClick={() => navigate({ to: `${metricPathPrefix}/create` })}
+            >
+              New
             </button>
           </div>
         }
       />
       <TableBody
         columns={columns}
-        rows={tagsData}
+        rows={storeMetrics}
         className={styles.tableBody}
       />
     </Card>

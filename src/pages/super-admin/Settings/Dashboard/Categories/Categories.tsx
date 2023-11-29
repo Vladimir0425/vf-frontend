@@ -1,55 +1,36 @@
-import React, { ChangeEvent, useState } from 'react';
-import { Link } from '@tanstack/react-location';
+import { ChangeEvent, useState, useEffect } from 'react';
+import { useNavigate } from '@tanstack/react-location';
 
 import { Card, TableToolbar, TableBody } from '@/components/common';
 import { Select } from '@/components/forms';
 
 import { TrashIcon } from '@/components/icons';
 
+import { useCategoryStore } from '@/stores';
+
 import { ITableColumn } from '@/interfaces';
 
 import styles from './Categories.module.scss';
+import { CategoryService } from '@/services';
 
 export interface ICategory {
   name: string;
   status: string;
 }
 
-const initialCatsData: ICategory[] = [
-  {
-    name: 'Black Polish Radish',
-    status: 'Active',
-  },
-  {
-    name: 'Bowls of Puter',
-    status: 'Active',
-  },
-  {
-    name: 'Black Polish Radish',
-    status: 'Active',
-  },
-  {
-    name: 'Bowls of Puter',
-    status: 'Active',
-  },
-  {
-    name: 'Black Polish Radish',
-    status: 'Active',
-  },
-  {
-    name: 'Bowls of Puter',
-    status: 'Active',
-  },
-];
-
-const newCatPath = '/admin/settings/dashboard/category/create';
+const catPathPrefix = '/admin/settings/dashboard/category';
 
 export function Categories() {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState<string>('');
   const [category, setCategory] = useState<string>('');
-  const [catsData, setCatsData] = useState<ICategory[]>(initialCatsData);
+  const {
+    categories: storeCategories,
+    setCategories: setStoreCategories,
+    deleteCategory: deleteStoreCategory,
+  } = useCategoryStore();
 
-  const statuses: string[] = ['Active', 'Passive'];
+  const statuses: string[] = ['Active', 'Inactive'];
   const columns: ITableColumn[] = [
     {
       title: 'Category Name',
@@ -75,8 +56,13 @@ export function Categories() {
       width: 250,
       cell: (row: any) => (
         <div className={styles.actionCell}>
-          <button className={styles.actionButton}>Edit</button>
-          <span>
+          <button
+            className={styles.actionButton}
+            onClick={() => navigate({ to: `${catPathPrefix}/${row._id}` })}
+          >
+            Edit
+          </button>
+          <span onClick={onDeleteClick(row._id)}>
             <TrashIcon />
           </span>
         </div>
@@ -92,6 +78,18 @@ export function Categories() {
     setCategory(_category);
   };
 
+  const onDeleteClick = (id: string) => () => {
+    CategoryService.deleteOne(id).then(() => {
+      deleteStoreCategory(id);
+    });
+  };
+
+  useEffect(() => {
+    CategoryService.findAll(filter, category).then(categories => {
+      setStoreCategories(categories);
+    });
+  }, [filter, category]);
+
   return (
     <Card title="Categories" className={styles.root}>
       <TableToolbar
@@ -106,15 +104,18 @@ export function Categories() {
         actions={
           <div>
             <p className={styles.buttonLabel}>New</p>
-            <button className={styles.actionButton}>
-              <Link to={newCatPath}>New</Link>
+            <button
+              className={styles.actionButton}
+              onClick={() => navigate({ to: `${catPathPrefix}/create` })}
+            >
+              New
             </button>
           </div>
         }
       />
       <TableBody
         columns={columns}
-        rows={catsData}
+        rows={storeCategories}
         className={styles.tableBody}
       />
     </Card>

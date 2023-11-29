@@ -1,29 +1,48 @@
-import React, { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useState, useEffect } from 'react';
+import { useMatch, useNavigate } from '@tanstack/react-location';
 
-import { Card, ImageUpload, Input, Select, TextField } from '@/components';
+import { Card } from '@/components/common';
+import { ImageUpload, Input, TextField } from '@/components/forms';
 
-import { ImageType } from '@/interfaces';
+import { PostService } from '@/services';
+
+import { usePostStore } from '@/stores';
+
+import { IPost, ImageType } from '@/interfaces';
 
 import styles from './NewPost.module.scss';
 
-export interface INewPost {
+interface INewPost {
   title: string;
   topic: string;
-  body: string;
-  thumbImg: ImageType;
-  largeImg: ImageType;
+  body?: string;
+  thumbImg?: ImageType;
+  largeImg?: ImageType;
 }
 
-const initialPost: INewPost = {
+const initialNewPost: INewPost = {
   title: '',
   topic: '',
   body: '',
   thumbImg: null,
   largeImg: null,
 };
+const initialPost: IPost = {
+  name: '',
+  topic: '',
+  status: '',
+};
+
+const backToPath = '/admin/settings/dashboard/posts';
 
 export function NewPost() {
-  const [post, setPost] = useState<INewPost>(initialPost);
+  const {
+    params: { id: postId },
+  } = useMatch();
+  const navigate = useNavigate();
+  const [post, setPost] = useState<IPost>(initialPost);
+  const [newPost, setNewPost] = useState<INewPost>(initialNewPost);
+  const { updatePost: updateStorePost } = usePostStore();
 
   const updatePost = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -32,6 +51,34 @@ export function NewPost() {
     setPost({ ...post, [field]: e.target.value });
   };
 
+  const updateNewPost = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    field: string,
+  ) => {
+    setNewPost({ ...newPost, [field]: e.target.value });
+  };
+
+  const onCreateClick = () => {
+    if (postId === 'create') {
+      PostService.createOne(post).then(() => {
+        navigate({ to: backToPath });
+      });
+    } else {
+      PostService.updateOne(postId, post).then(() => {
+        updateStorePost(postId, post as IPost);
+        navigate({ to: backToPath });
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (postId && postId !== 'create') {
+      PostService.findOne(postId).then(post => {
+        setPost(post);
+      });
+    }
+  }, [postId]);
+
   return (
     <Card title="Support Center" className={styles.root}>
       <div className={styles.container}>
@@ -39,9 +86,9 @@ export function NewPost() {
           <div className={styles.control}>
             <p>Title</p>
             <Input
-              value={post.title}
+              value={post.name}
               updateValue={(e: ChangeEvent<HTMLInputElement>) =>
-                updatePost(e, 'title')
+                updatePost(e, 'name')
               }
               placeholder="Title"
             />
@@ -77,16 +124,23 @@ export function NewPost() {
         <TextField
           rows={15}
           placeholder="Body"
-          value={post.body}
+          value={newPost.body}
           updateValue={(e: ChangeEvent<HTMLTextAreaElement>) =>
-            updatePost(e, 'body')
+            updateNewPost(e, 'body')
           }
           className={styles.bodyInput}
         />
       </div>
       <div className={styles.buttonBar}>
-        <button className={styles.cancelButton}>Cancel</button>
-        <button className={styles.addButton}>Add</button>
+        <button
+          className={styles.cancelButton}
+          onClick={() => navigate({ to: backToPath })}
+        >
+          Cancel
+        </button>
+        <button className={styles.addButton} onClick={onCreateClick}>
+          {postId === 'create' ? 'Add' : 'Edit'}
+        </button>
       </div>
     </Card>
   );

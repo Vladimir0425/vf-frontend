@@ -8,4 +8,8 @@
   .active {
     @apply bg-success ring-1 ring-primary ring-offset-2;
   }
+
+  .small {
+    @apply h-1.5 w-1.5;
+  }
 }

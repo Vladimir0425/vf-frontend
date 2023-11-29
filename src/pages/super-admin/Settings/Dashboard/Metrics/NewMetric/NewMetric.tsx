@@ -1,7 +1,14 @@
-import React, { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useState, useEffect } from 'react';
+import { useMatch, useNavigate } from '@tanstack/react-location';
 
-import { Card, Input, Select } from '@/components';
-import { IMetric } from '../Metrics';
+import { Card } from '@/components/common';
+import { Input, Select } from '@/components/forms';
+
+import { MetricService } from '@/services';
+
+import { useMetricStore } from '@/stores';
+
+import { IMetric } from '@/interfaces';
 
 import styles from './NewMetric.module.scss';
 
@@ -9,9 +16,17 @@ const initialMetric: IMetric = {
   name: '',
   status: '',
 };
+const initialStatus: string[] = ['Active', 'Inactive'];
+
+const backToPath = '/admin/settings/dashboard/metrics';
 
 export function NewMetric() {
+  const {
+    params: { id: metricId },
+  } = useMatch();
+  const navigate = useNavigate();
   const [metric, setMetric] = useState<IMetric>(initialMetric);
+  const { updateMetric: updateStoreMetric } = useMetricStore();
 
   const updateMetricName = (e: ChangeEvent<HTMLInputElement>) => {
     setMetric({ ...metric, name: e.target.value });
@@ -20,6 +35,29 @@ export function NewMetric() {
   const updateMetricStatus = (status: string) => {
     setMetric({ ...metric, status });
   };
+
+  const onMetricCreate = () => {
+    if (metricId === 'create') {
+      MetricService.createOne(metric).then(metric => {
+        navigate({ to: backToPath });
+      });
+    } else {
+      MetricService.updateOne(metricId, metric).then(metric => {
+        updateStoreMetric(metricId, metric);
+        navigate({ to: backToPath });
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!metricId || metricId === 'create') {
+      setMetric(initialMetric);
+    } else {
+      MetricService.findOne(metricId).then(metric => {
+        setMetric(metric);
+      });
+    }
+  }, [metricId]);
 
   return (
     <Card title="New Metric" className={styles.root}>
@@ -38,12 +76,20 @@ export function NewMetric() {
             value={metric.status}
             updateValue={updateMetricStatus}
             placeholder="Status"
+            options={initialStatus}
           />
         </div>
       </div>
       <div className={styles.buttonBar}>
-        <button className={styles.cancelButton}>Cancel</button>
-        <button className={styles.addButton}>Add</button>
+        <button
+          className={styles.cancelButton}
+          onClick={() => navigate({ to: backToPath })}
+        >
+          Cancel
+        </button>
+        <button className={styles.addButton} onClick={onMetricCreate}>
+          {metricId === 'create' ? 'Add' : 'Edit'}
+        </button>
       </div>
     </Card>
   );

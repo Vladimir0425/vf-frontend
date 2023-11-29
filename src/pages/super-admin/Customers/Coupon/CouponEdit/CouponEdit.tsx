@@ -1,15 +1,16 @@
 import React, { ChangeEvent, useState } from 'react';
-import clsx from 'clsx';
 
 import { Card, TableBody } from '@/components/common';
 import { Input, Select, RadioGroup, Radio } from '@/components/forms';
-import { MagnifierIcon, ProductIcon } from '@/components/icons';
+import { MagnifierIcon } from '@/components/icons';
 
 import { IRange, ITableColumn } from '@/interfaces';
 
 import { formatDate } from '@/utils';
 
+import ProductSvg from '@/assets/admin/backs/Product.svg';
 import styles from './CouponEdit.module.scss';
+import { useMatch } from '@tanstack/react-location';
 
 export type CouponType = 'Free Shipping' | 'Percent' | 'Tiered';
 export type UsageType = 'Use Code' | 'Amount Spent';
@@ -56,7 +57,9 @@ const productColumns: ITableColumn[] = [
     title: 'Select',
     name: 'select',
     width: 100,
-    cell: (row: any) => <Radio label={<ProductIcon />} value={row.id} />,
+    cell: (row: any) => (
+      <Radio label={<img src={ProductSvg} />} value={row.id} />
+    ),
   },
   {
     title: 'Product Name',
@@ -138,6 +141,9 @@ const initialCoupon: ICouponEdit = {
 };
 
 export function CouponEdit() {
+  const {
+    params: { id: couponId },
+  } = useMatch();
   const [coupon, setCoupon] = useState<ICouponEdit>(initialCoupon);
 
   const updateStrForm = (field: string) => (value: string) => {

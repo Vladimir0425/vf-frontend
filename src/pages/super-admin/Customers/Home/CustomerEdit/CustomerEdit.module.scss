@@ -20,6 +20,14 @@
         @apply mb-4;
       }
     }
+
+    .buttonBar {
+      @apply flex justify-end;
+
+      .button {
+        @apply rounded-full bg-dark px-12 py-3 text-white;
+      }
+    }
   }
 
   .statisSection {

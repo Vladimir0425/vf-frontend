@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useState, useEffect } from 'react';
 import { Link, useNavigate } from '@tanstack/react-location';
 
 import { Card, TableToolbar, TableBody } from '@/components/common';
@@ -8,60 +8,26 @@ import { TrashIcon } from '@/components/icons';
 
 import { ITableColumn } from '@/interfaces';
 
+import { useCouponStore } from '@/stores';
+
+import { CouponService } from '@/services';
+
 import styles from './Coupons.module.scss';
 
-export interface ICoupon {
-  name: string;
-  type: string;
-  status: string;
-  discount?: number;
-}
+const initialStatus: string[] = ['Active', 'Inactive'];
 
-const initialCoupons: ICoupon[] = [
-  {
-    name: '10of10',
-    type: 'Percentage',
-    status: 'Active',
-    discount: 10,
-  },
-  {
-    name: 'SAVEMORE',
-    type: 'Percentage',
-    status: 'Active',
-    discount: 22,
-  },
-  {
-    name: 'SaveWhenSpend',
-    type: 'Tiered Coupon',
-    status: 'Active',
-  },
-  {
-    name: '14ISCOOL',
-    type: 'Percentage',
-    status: 'Active',
-    discount: 14,
-  },
-  {
-    name: 'freeshipping',
-    type: 'Free Shipping',
-    status: 'Active',
-  },
-  {
-    name: 'freedom',
-    type: 'Free Shipping',
-    status: 'Active',
-  },
-];
-
-const couponEditPath = '/admin/customers/coupon/edit';
+const couponPathPrefix = '/admin/customers/coupon';
 
 export function Coupons() {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState<string>('');
   const [category, setCategory] = useState<string>('');
-  const [couponsData, setCouponsData] = useState<ICoupon[]>(initialCoupons);
-  const navigate = useNavigate();
+  const {
+    coupons: storeCoupons,
+    setCoupons: setStoreCoupons,
+    deleteCoupon: deleteStoreCoupon,
+  } = useCouponStore();
 
-  const statuses: string[] = ['Active', 'Passive'];
   const columns: ITableColumn[] = [
     {
       title: 'Coupon Name',
@@ -81,7 +47,7 @@ export function Coupons() {
         <Select
           rounded="full"
           value={row.status}
-          options={statuses}
+          options={[]}
           className={styles.statusSelector}
         />
       ),
@@ -100,11 +66,11 @@ export function Coupons() {
         <div className={styles.actionCell}>
           <button
             className={styles.actionButton}
-            onClick={() => navigate({ to: couponEditPath })}
+            onClick={() => navigate({ to: `${couponPathPrefix}/${row._id}` })}
           >
             Edit
           </button>
-          <span>
+          <span onClick={onDeleteClick(row._id)}>
             <TrashIcon />
           </span>
         </div>
@@ -120,6 +86,18 @@ export function Coupons() {
     setCategory(_category);
   };
 
+  const onDeleteClick = (id: string) => () => {
+    CouponService.deleteOne(id).then(() => {
+      deleteStoreCoupon(id);
+    });
+  };
+
+  useEffect(() => {
+    CouponService.findAll(filter, category).then(coupons => {
+      setStoreCoupons(coupons);
+    });
+  }, [filter, category]);
+
   return (
     <Card title="Coupon Center" className={styles.root}>
       <TableToolbar
@@ -129,20 +107,23 @@ export function Coupons() {
         category={category}
         updateCategory={updateStatus}
         selectTitle="Status"
-        selectOpts={statuses}
+        selectOpts={initialStatus}
         className={styles.tableToolbar}
         actions={
           <div>
             <p className={styles.buttonLabel}>New</p>
-            <button className={styles.actionButton}>
-              <Link to={''}>New</Link>
+            <button
+              className={styles.actionButton}
+              onClick={() => navigate({ to: `${couponPathPrefix}/create` })}
+            >
+              New
             </button>
           </div>
         }
       />
       <TableBody
         columns={columns}
-        rows={couponsData}
+        rows={storeCoupons}
         className={styles.tableBody}
       />
     </Card>

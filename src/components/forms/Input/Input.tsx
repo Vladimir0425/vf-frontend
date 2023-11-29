@@ -5,6 +5,7 @@ import styles from './Input.module.scss';
 
 export type RoundedType = 'full' | 'small';
 export type BorderType = 'solid' | 'none';
+export type BorderColorType = 'primary' | 'success';
 export type SizeType = 'large' | 'medium';
 export type BgColorType = 'primary' | 'secondary';
 export type AdornmentType = 'left' | 'right';
@@ -23,6 +24,7 @@ export interface IInputProps {
   placeholder?: string;
   rounded?: RoundedType;
   border?: BorderType;
+  borderColor?: BorderColorType;
   size?: SizeType;
   select?: SelectType;
   bgcolor?: BgColorType;
@@ -37,11 +39,13 @@ export const Input = forwardRef((props: IInputProps, ref: any) => {
     placeholder = '',
     rounded = 'small',
     border = 'solid',
+    borderColor = 'success',
     size = 'medium',
     bgcolor = 'primary',
     select = 'text',
     className = '',
     adornment = null,
+    defaultValue = '',
     updateValue,
     ...nativeAttrs
   } = props;
@@ -52,6 +56,11 @@ export const Input = forwardRef((props: IInputProps, ref: any) => {
     size === 'large' ? styles.sizeLarge : '',
     select === 'none' ? styles.selectNone : '',
     bgcolor === 'secondary' ? styles.bgColorSecondary : '',
+    borderColor === 'success'
+      ? styles.borderColorSuccess
+      : borderColor === 'primary'
+      ? styles.borderColorPrimary
+      : '',
     adornment && adornment.position === 'right'
       ? styles.adornmentRight
       : adornment && adornment.position === 'left'
@@ -67,6 +76,7 @@ export const Input = forwardRef((props: IInputProps, ref: any) => {
         placeholder={placeholder}
         className={styles.input}
         onChange={updateValue}
+        defaultValue={defaultValue}
         ref={ref}
         {...nativeAttrs}
       />

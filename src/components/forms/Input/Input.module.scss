@@ -91,3 +91,15 @@
     @apply bg-primary;
   }
 }
+
+.borderColorSuccess {
+  .input {
+    @apply border-2 border-success placeholder-secondary;
+  }
+}
+
+.borderColorPrimary {
+  .input {
+    @apply border-1 border-primary placeholder-primary;
+  }
+}

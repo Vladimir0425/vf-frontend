@@ -1,42 +1,29 @@
-import React, { ChangeEvent, useState } from 'react';
-import { Navigate, useNavigate } from '@tanstack/react-location';
+import { ChangeEvent, useState, useEffect } from 'react';
+import { useNavigate } from '@tanstack/react-location';
 import clsx from 'clsx';
 
 import { Card, TableBody, TableToolbar } from '@/components';
 import { Select } from '@/components/forms';
 import { TrashIcon } from '@/components/icons';
 
+import { useCustomerStore } from '@/stores';
+
+import { CustomerService } from '@/services';
+
 import { IRange, ITableColumn } from '@/interfaces';
 
 import styles from './CustomerHome.module.scss';
 
-const sortOpts = ['Alphabetical Order', 'Most Recent', 'Oldest'];
+const initialSort = ['Alphabetical Order', 'Most Recent', 'Oldest'];
 
-const statusOpts = ['Active', 'Passive'];
+const initialStatus = ['Active', 'Inactive'];
 
 const initialRange = {
   from: new Date(),
   to: new Date(),
 };
 
-const initialTableData = [
-  {
-    name: 'John Pollock',
-    email: 'Brandon@fresherchoice.com',
-    status: 'Active',
-    phone: '203-228-8814',
-    address: '313 Capitol Avenue Waterbury, Ct 06705',
-  },
-  {
-    name: 'John Pollock',
-    email: 'Brandon@fresherchoice.com',
-    status: 'Active',
-    phone: '203-228-8814',
-    address: '313 Capitol Avenue Waterbury, Ct 06705',
-  },
-];
-
-const customerEditPath = '/admin/customers/home/edit';
+const customerPathPrefix = '/admin/customers/home';
 
 export function CustomerHome() {
   const navigate = useNavigate();
@@ -44,7 +31,11 @@ export function CustomerHome() {
   const [sort, setSort] = useState('');
   const [category, setCategory] = useState('');
   const [range, setRange] = useState<IRange>(initialRange);
-  const [tableData, setTableData] = useState(initialTableData);
+  const {
+    customers: storeCustomers,
+    setCustomers: setStoreCustomers,
+    deleteCustomer: deleteStoreCustomer,
+  } = useCustomerStore();
 
   const columns: ITableColumn[] = [
     {
@@ -66,16 +57,16 @@ export function CustomerHome() {
         <Select
           rounded="full"
           value={row.status}
-          options={statusOpts}
+          options={[]}
           className={styles.statusSelector}
         />
       ),
     },
     {
       title: 'Phone Number',
-      name: 'phone',
+      name: 'number',
       width: 200,
-      cell: (row: any) => <span className={styles.cell}>{row.phone}</span>,
+      cell: (row: any) => <span className={styles.cell}>{row.number}</span>,
     },
     {
       title: 'Address',
@@ -91,11 +82,11 @@ export function CustomerHome() {
         <div className={styles.actionCell}>
           <button
             className={styles.actionButton}
-            onClick={() => navigate({ to: customerEditPath })}
+            onClick={() => navigate({ to: `${customerPathPrefix}/${row._id}` })}
           >
             Edit
           </button>
-          <span>
+          <span onClick={onDeleteClick(row._id)}>
             <TrashIcon />
           </span>
         </div>
@@ -112,6 +103,18 @@ export function CustomerHome() {
       setRange({ ...range, [which]: new Date(e.target.value) });
     };
 
+  const onDeleteClick = (id: string) => () => {
+    CustomerService.deleteOne(id).then(() => {
+      deleteStoreCustomer(id);
+    });
+  };
+
+  useEffect(() => {
+    CustomerService.findAll(filter, category).then(customers => {
+      setStoreCustomers(customers);
+    });
+  }, [filter, category]);
+
   return (
     <Card title="Customer Management" className={styles.root}>
       <TableToolbar
@@ -123,11 +126,11 @@ export function CustomerHome() {
         updateRange={onRangeChange}
         downloadable={true}
         sortable={true}
-        sortOpts={sortOpts}
+        sortOpts={initialSort}
         sort={sort}
         updateSort={(_sort: string) => setSort(_sort)}
         selectTitle="Status"
-        selectOpts={statusOpts}
+        selectOpts={initialStatus}
         category={category}
         updateCategory={(_cat: string) => setCategory(_cat)}
         className={styles.tableToolbar}
@@ -150,8 +153,8 @@ export function CustomerHome() {
       />
       <TableBody
         columns={columns}
-        rows={tableData}
-        className={styles.taboeBody}
+        rows={storeCustomers}
+        className={styles.tableBody}
       />
     </Card>
   );

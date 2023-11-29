@@ -1,0 +1,39 @@
+.root {
+  @apply relative flex min-w-[200px] max-w-[300px] flex-col gap-y-2 rounded-md p-2 hover:shadow-lg xl:min-w-0;
+
+  .image {
+    @apply relative;
+
+    img {
+      @apply aspect-auto w-full;
+    }
+
+    .moreContext {
+      @apply absolute left-1/2 top-1/2 z-10 flex w-full -translate-x-1/2 -translate-y-1/2 transform items-center justify-center gap-x-2 text-xl font-bold text-success;
+
+      span {
+        @apply flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-success;
+      }
+    }
+  }
+
+  h1 {
+    @apply text-xs font-bold xl:text-base;
+  }
+
+  p {
+    @apply text-[10px] xl:text-xs;
+  }
+
+  span {
+    @apply text-sm font-bold xl:text-lg;
+  }
+
+  .grayLayer {
+    @apply absolute left-0 top-0 h-full w-full bg-white/70;
+  }
+}
+
+.active {
+  @apply shadow-lg;
+}

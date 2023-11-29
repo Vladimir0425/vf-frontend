@@ -9,7 +9,7 @@ import styles from './Select.module.scss';
 
 type RoundedType = 'full' | 'small';
 type BorderType = 'solid' | 'none';
-type BgColorType = 'primary' | 'secondary' | 'blue' | 'red' | 'white';
+type BgColorType = 'primary' | 'secondary' | 'blue' | 'red' | 'white' | 'dark';
 
 export interface ISelectProps {
   value?: string;
@@ -47,6 +47,8 @@ export function Select({
       ? styles.bgColorBlue
       : bgcolor === 'red'
       ? styles.bgColorRed
+      : bgcolor === 'dark'
+      ? styles.bgColorDark
       : '',
     className,
   );

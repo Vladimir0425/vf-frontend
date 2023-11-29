@@ -15,7 +15,7 @@
     }
 
     .tiered {
-      @apply flex flex-wrap justify-end;
+      @apply flex w-fit flex-col;
     }
 
     .tieredButton {

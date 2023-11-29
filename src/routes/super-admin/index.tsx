@@ -130,7 +130,7 @@ export const superAdminRoutes = [
               },
               {
                 title: 'New',
-                path: '/create',
+                path: '/:id',
                 element: <NewProductTag />,
               },
             ],
@@ -148,7 +148,7 @@ export const superAdminRoutes = [
               },
               {
                 title: 'New',
-                path: '/create',
+                path: '/:id',
                 element: <NewMetric />,
               },
             ],
@@ -166,7 +166,7 @@ export const superAdminRoutes = [
               },
               {
                 title: 'New',
-                path: '/create',
+                path: '/:id',
                 element: <NewCategory />,
               },
             ],
@@ -184,7 +184,7 @@ export const superAdminRoutes = [
               },
               {
                 title: 'New',
-                path: '/create',
+                path: '/:id',
                 element: <NewPost />,
               },
             ],
@@ -212,7 +212,7 @@ export const superAdminRoutes = [
           },
           {
             title: 'Edit',
-            path: '/edit',
+            path: '/:id',
             element: <CustomerEdit />,
           },
         ],
@@ -230,7 +230,7 @@ export const superAdminRoutes = [
           },
           {
             title: 'Edit',
-            path: '/edit',
+            path: '/:id',
             element: <CouponEdit />,
           },
         ],

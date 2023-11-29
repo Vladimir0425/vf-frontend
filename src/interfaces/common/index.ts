@@ -1,4 +1,13 @@
 export type ImageType = File | null;
+export type WeekdayType =
+  | 'Monday'
+  | 'Tuesday'
+  | 'Wednesday'
+  | 'Thursday'
+  | 'Friday'
+  | 'Saturday'
+  | 'Sunday'
+  | 'None';
 
 export interface ITableColumn {
   title: string;
@@ -11,4 +20,11 @@ export interface ITableColumn {
 export interface IRange {
   from: Date;
   to: Date;
+}
+
+export interface GetInfinitePagesInterface<T> {
+  nextId?: number;
+  previousId?: number;
+  data: T;
+  count: number;
 }

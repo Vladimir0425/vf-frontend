@@ -36,6 +36,17 @@
   }
 }
 
+.bgColorDark {
+  .selectBox,
+  .viewBox {
+    @apply bg-dark;
+
+    & * {
+      @apply text-white;
+    }
+  }
+}
+
 .bgColorSecondary {
   .selectBox,
   .viewBox {

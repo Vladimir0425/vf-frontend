@@ -1,62 +1,33 @@
-import React, { ChangeEvent, useState } from 'react';
-import { Link } from '@tanstack/react-location';
+import { ChangeEvent, useState, useEffect } from 'react';
+import { useNavigate } from '@tanstack/react-location';
 
 import { Card, TableToolbar, TableBody } from '@/components/common';
 import { Select } from '@/components/forms';
-
 import { TrashIcon } from '@/components/icons';
+
+import { PostService } from '@/services';
+
+import { usePostStore } from '@/stores';
 
 import { ITableColumn } from '@/interfaces';
 
 import styles from './Posts.module.scss';
 
-export interface IPost {
-  name: string;
-  topic: string;
-  status: string;
-}
+const initialStatus = ['Active', 'Inactive'];
 
-const initialPostsData: IPost[] = [
-  {
-    name: 'Black Polish Radish',
-    topic: 'Black Polish Radish',
-    status: 'Active',
-  },
-  {
-    name: 'Bowls of Puter',
-    topic: 'Bowls of Puter',
-    status: 'Active',
-  },
-  {
-    name: 'Black Polish Radish',
-    topic: 'Black Polish Radish',
-    status: 'Active',
-  },
-  {
-    name: 'Bowls of Puter',
-    topic: 'Bowls of Puter',
-    status: 'Active',
-  },
-  {
-    name: 'Black Polish Radish',
-    topic: 'Black Polish Radish',
-    status: 'Active',
-  },
-  {
-    name: 'Bowls of Puter',
-    topic: 'Bowls of Puter',
-    status: 'Active',
-  },
-];
-
-const newPostPath = '/admin/settings/dashboard/posts/create';
+const postPathPrefix = '/admin/settings/dashboard/posts';
 
 export function Posts() {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState<string>('');
   const [category, setCategory] = useState<string>('');
-  const [postsData, setPostsData] = useState<IPost[]>(initialPostsData);
 
-  const statuses: string[] = ['Active', 'Passive'];
+  const {
+    posts: storePosts,
+    setPosts: setStorePosts,
+    deletePost: deleteStorePost,
+  } = usePostStore();
+
   const columns: ITableColumn[] = [
     {
       title: 'Post Name',
@@ -76,7 +47,7 @@ export function Posts() {
         <Select
           rounded="full"
           value={row.status}
-          options={statuses}
+          options={[]}
           className={styles.statusSelector}
         />
       ),
@@ -87,8 +58,13 @@ export function Posts() {
       width: 250,
       cell: (row: any) => (
         <div className={styles.actionCell}>
-          <button className={styles.actionButton}>Edit</button>
-          <span>
+          <button
+            className={styles.actionButton}
+            onClick={() => navigate({ to: `${postPathPrefix}/${row._id}` })}
+          >
+            Edit
+          </button>
+          <span onClick={onDeleteClick(row._id)}>
             <TrashIcon />
           </span>
         </div>
@@ -104,8 +80,20 @@ export function Posts() {
     setCategory(_category);
   };
 
+  const onDeleteClick = (id: string) => () => {
+    PostService.deleteOne(id).then(() => {
+      deleteStorePost(id);
+    });
+  };
+
+  useEffect(() => {
+    PostService.findAll(filter, category).then(posts => {
+      setStorePosts(posts);
+    });
+  }, [filter, category]);
+
   return (
-    <Card title="Metrics" className={styles.root}>
+    <Card title="Support Center" className={styles.root}>
       <TableToolbar
         search={filter}
         updateSearch={updateFilter}
@@ -113,20 +101,23 @@ export function Posts() {
         category={category}
         updateCategory={updateStatus}
         selectTitle="Status"
-        selectOpts={statuses}
+        selectOpts={initialStatus}
         className={styles.tableToolbar}
         actions={
           <div>
             <p className={styles.buttonLabel}>New</p>
-            <button className={styles.actionButton}>
-              <Link to={newPostPath}>New</Link>
+            <button
+              className={styles.actionButton}
+              onClick={() => navigate({ to: `${postPathPrefix}/create` })}
+            >
+              New
             </button>
           </div>
         }
       />
       <TableBody
         columns={columns}
-        rows={postsData}
+        rows={storePosts}
         className={styles.tableBody}
       />
     </Card>

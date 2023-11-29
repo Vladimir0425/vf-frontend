@@ -19,6 +19,7 @@ import styles from './TableToolbar.module.scss';
 export interface ITableToolbarProps {
   searchable?: boolean;
   searchTitle?: string;
+  searchTitleHidden?: boolean;
   search?: string;
   updateSearch?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   rangable?: boolean;
@@ -43,6 +44,7 @@ export interface ITableToolbarProps {
 export function TableToolbar({
   searchable = true,
   searchTitle = 'Search',
+  searchTitleHidden = false,
   search = '',
   updateSearch = () => {},
   rangable = false,
@@ -71,7 +73,7 @@ export function TableToolbar({
     <div className={clsx(styles.root, className)}>
       {searchable && (
         <div className={styles.control}>
-          <p>{searchTitle}</p>
+          {!searchTitleHidden && <p>{searchTitle}</p>}
           <Input
             value={search}
             updateValue={updateSearch}

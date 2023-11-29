@@ -15,6 +15,7 @@ export default {
       DEFAULT: '1px',
       0: '0',
       0.5: '0.5px',
+      1: '1px',
       2: '2px',
       3: '3px',
       4: '4px',
@@ -27,18 +28,23 @@ export default {
         success: '#652F90',
         warning: '#EFD9CE',
         info: '#DEC0F1',
+        light: '#84A98C',
         dark: '#3F3F3F',
       },
       textColor: {
         primary: '#3F3F3F',
         success: '#652F90',
+        light: '#84A98C',
       },
       borderColor: {
         primary: '#3F3F3F',
         secondary: '#F2EEE9',
+        success: '#E0E0E0',
+        light: '#84A98C',
       },
       placeholderColor: {
         primary: '#616161',
+        secondary: '#9B9B9B',
       },
       ringColor: {
         primary: '#652F90',
@@ -46,6 +52,9 @@ export default {
       },
       ringOffsetColor: {
         primary: '#652F90',
+      },
+      fontFamily: {
+        candara: 'Candara',
       },
     },
   },
